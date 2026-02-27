@@ -1,0 +1,70 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 16, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_CurrSens" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %openfile buffer
+    extern void sfun_MagLevTbx_CurrSens_WrappedStart(uint8_T sensorId);
+    extern void sfun_MagLevTbx_CurrSens_WrappedOutput(uint8_T sensorId, float *y0);
+    extern void sfun_MagLevTbx_CurrSens_WrappedTerminate(void);
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+
+    %assign sensorId = SFcnParamSettings.sensorId
+    %assign sensor_initFlag = "currSensor%<sensorId>_initFlag"
+
+    %%  Check if the specified sensor has been initialized
+    %if !ISFIELD(::CompiledModel, sensor_initFlag)
+        %%  If not, set the flag and initialize the sensor
+        %assign dummy = SETFIELD(::CompiledModel, sensor_initFlag, TLC_TRUE)
+        /* %<Type> Block: %<Name> */
+
+        /*  Initialize current sensors %<sensorId>  */
+        sfun_MagLevTbx_CurrSens_WrappedStart(%<sensorId>);
+    %endif
+
+%endfunction %% Start
+
+
+%function Enable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Enable
+
+
+%function Outputs(block, system) Output
+
+    /* %<Type> Block: %<Name> */
+    %assign sensorId = SFcnParamSettings.sensorId
+    %assign py0 = LibBlockOutputSignalAddr(0, "", "", 0)
+
+    /*  Get measurement of current sensor %<sensorId>  */
+    sfun_MagLevTbx_CurrSens_WrappedOutput(%<sensorId>, %<py0>);
+
+%endfunction %% Outputs
+
+
+%function Disable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Disable
+
+
+%function Terminate(block, system) Output
+
+    /* %<Type> Block: %<Name> */
+    sfun_MagLevTbx_CurrSens_WrappedTerminate();
+
+%endfunction %% Terminate

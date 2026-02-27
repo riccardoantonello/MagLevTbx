@@ -1,0 +1,81 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 15, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_MagSens" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %openfile buffer
+    extern void sfun_MagLevTbx_i2cMux_WrappedStart(void);
+    extern void sfun_MagLevTbx_MagSens_WrappedStart(uint8_T sensorId);
+    extern void sfun_MagLevTbx_MagSens_WrappedOutput(uint8_T sensorId, double *y0);
+    extern void sfun_MagLevTbx_MagSens_WrappedTerminate(void);
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+
+    %assign sensorId = SFcnParamSettings.sensorId
+    %assign i2cMux_initFlag = "i2cMux_initFlag"
+    %assign sensor_initFlag = "magSensor%<sensorId>_initFlag"
+
+    %%  Check if the sensor I2C mux has been initialized
+    %if !ISFIELD(::CompiledModel, i2cMux_initFlag)
+        %%  If not, set the flag and initialize the mux
+        %assign dummy = SETFIELD(::CompiledModel, i2cMux_initFlag, TLC_TRUE)
+        /*  Initialize mag sensors I2C multiplexer  */
+        sfun_MagLevTbx_i2cMux_WrappedStart();
+    %endif
+
+    %%  Check if the specified magnetic sensor has been initialized
+    %if !ISFIELD(::CompiledModel, sensor_initFlag)
+        %%  If not, set the flag and initialize the sensor
+        %assign dummy = SETFIELD(::CompiledModel, sensor_initFlag, TLC_TRUE)
+        /* %<Type> Block: %<Name> */
+
+        /*  Initialize mag sensors %<sensorId>  */
+        sfun_MagLevTbx_MagSens_WrappedStart(%<sensorId>);
+    %endif
+
+%endfunction %% Start
+
+
+%function Enable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Enable
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    /* %<Type> Block: %<Name> */
+    %assign sensorId = SFcnParamSettings.sensorId
+    %assign py0 = LibBlockOutputSignalAddr(0, "", "", 0)
+
+    /*  Get measurement of mag sensor %<sensorId>  */
+    sfun_MagLevTbx_MagSens_WrappedOutput(%<sensorId>, %<py0>);
+
+%endfunction %% Outputs
+
+
+%function Disable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Disable
+
+
+%function Terminate(block, system) Output
+
+    /* %<Type> Block: %<Name> */
+    sfun_MagLevTbx_MagSens_WrappedTerminate();
+
+%endfunction %% Terminate

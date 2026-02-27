@@ -1,0 +1,47 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 27, 2026
+%%
+%% Dept. of Information Engineering, University of Padova
+%%
+
+%implements "sfun_MagLevTbx_UserLED" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %%  Add includes
+    %<LibAddToCommonIncludes("Arduino.h")>
+
+    %%  Declare defines
+    %openfile buffer
+    #define USER_LED_PIN    13
+    %closefile buffer
+    %<LibCacheDefine(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    /*  Configure User LED Pin  */ 
+    pinMode(USER_LED_PIN, OUTPUT);
+
+%endfunction %% Start
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    /*  Set User LED Pin state  */ 
+    %assign u1 = LibBlockInputSignal(0, "", "", 0)
+    digitalWrite(USER_LED_PIN, %<u1>);
+
+%endfunction %% Outputs
+
+
+%function Terminate(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Terminate

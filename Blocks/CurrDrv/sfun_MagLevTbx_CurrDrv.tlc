@@ -1,0 +1,92 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 16, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_CurrDrv" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %openfile buffer
+    extern void sfun_MagLevTbx_CurrDrv_WrappedStart(uint8_T driverId);
+    extern void sfun_MagLevTbx_CurrDrv_WrappedOutput(uint8_T driverId, int16_T *u0);
+    extern void sfun_MagLevTbx_CurrDrv_WrappedTerminate(uint8_T driverId);
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+
+    %assign driverId = SFcnParamSettings.driverId
+    %assign blockInstCnt = "currDriver%<driverId>_blockInstCnt"
+
+    %%  Increase the block instance counter
+    %assign cnt = 0
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+    %endif
+
+    %assign cnt = cnt + 1
+    %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+    %%  Initialize the sensor for the first instance
+    %if cnt == 1
+        /* %<Type> Block: %<Name> */
+
+        /* Init current driver %<driverId> (first user) */
+        sfun_MagLevTbx_CurrDrv_WrappedStart(%<driverId>);
+    %endif
+
+%endfunction %% Start
+
+
+%function Enable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Enable
+
+
+%function Outputs(block, system) Output
+
+    /* %<Type> Block: %<Name> */
+    %assign driverId = SFcnParamSettings.driverId
+    %assign pu0 = LibBlockInputSignalAddr(0, "", "", 0)
+
+    /*  Set PWM of current driver %<driverId>  */
+    sfun_MagLevTbx_CurrDrv_WrappedOutput(%<driverId>, %<pu0>);
+
+%endfunction %% Outputs
+
+
+%function Disable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Disable
+
+
+%function Terminate(block, system) Output
+
+    %assign driverId = SFcnParamSettings.driverId
+    %assign blockInstCnt = "currDriver%<driverId>_blockInstCnt"
+
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = cnt - 1
+        %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+        %if cnt == 0
+            /* %<Type> Block: %<Name> */
+
+            /* De-init current driver %<driverId> (last user) */
+            sfun_MagLevTbx_CurrDrv_WrappedTerminate(%<driverId>);
+        %endif
+
+    %endif
+
+%endfunction %% Terminate

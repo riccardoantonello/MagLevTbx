@@ -1,0 +1,199 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 18, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_UsbSerialPacketReceive" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %openfile buffer
+    extern void sfun_MagLevTbx_UsbSerialPacketReceive_WrappedStart();
+    extern size_t sfun_MagLevTbx_UsbSerialPacketReceive_WrappedOutput( \
+        uint8_T *pPacketBuffer, uint32_T packetSize, boolean_T nullTerminated);
+    extern void sfun_MagLevTbx_UsbSerialPacketReceive_WrappedTerminate();
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+    %openfile buffer
+        /*  number of bytes placed in receiving buffer  */
+        size_t receivedBytesNum;
+    %closefile buffer
+    %<LibSystemOutputCustomCode(system, buffer, "declaration")>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %%  Allocate payload buffer. 
+    %%  In case of a COBS encoded packet, the payload buffer size is 
+    %%  increased by one byte, to comply with the algorithm used in the
+    %%  decoding routine.
+    /*  Allocate payload buffer  */
+    %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+    %assign payloadSize = SFcnParamSettings.PayloadSize
+    %assign cobsEncoded = SFcnParamSettings.CobsEncoded
+    %if cobsEncoded
+        %<pPayloadBuffer> = calloc(%<payloadSize + 1>, sizeof(uint8_T));
+    %else
+        %<pPayloadBuffer> = calloc(%<payloadSize>, sizeof(uint8_T));
+    %endif
+
+    /*  Allocate packet buffer  */
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1) 
+    %assign packetSize = SFcnParamSettings.PacketSize
+    %<pPacketBuffer> = calloc(%<packetSize>, sizeof(uint8_T));
+
+    %%  Create init code only for the first block instance in the model
+    %assign blockInstCnt = "usbSerialPacketReceive_blockInstCnt"
+
+    %assign cnt = 0
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+    %endif
+
+    %assign cnt = cnt + 1
+    %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+    %if cnt == 1
+        /*  Initialize USB Serial  */
+        sfun_MagLevTbx_UsbSerialPacketReceive_WrappedStart();
+    %endif
+
+%endfunction %% Start
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %%  Receive packet
+    /*  Receive packet  */
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1) 
+    %assign packetSize = SFcnParamSettings.PacketSize
+    %assign nullTerminated = SFcnParamSettings.NullTerminated
+    receivedBytesNum = sfun_MagLevTbx_UsbSerialPacketReceive_WrappedOutput( \
+        (uint8_T *)%<pPacketBuffer>, %<packetSize>, \
+        (boolean_T *)%<nullTerminated>);
+
+    %%  Decode and unpack only if the packet is valid
+    if(receivedBytesNum == %<packetSize>)
+    {
+        /*  Valid packet: proceed with decoding and unpacking  */
+
+        %%  Perform COBS decoding
+        %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+        %assign payloadSize = SFcnParamSettings.PayloadSize
+        %assign cobsEncoded = SFcnParamSettings.CobsEncoded
+        %if cobsEncoded
+            /*  Perform COBS decoding  */
+            %if nullTerminated
+                cobsDecode((uint8_T *) %<pPacketBuffer>, %<packetSize - 1>, \
+                    (uint8_T *) %<pPayloadBuffer>);        
+            %else
+                cobsDecode((uint8_T *) %<pPacketBuffer>, %<packetSize>, \
+                    (uint8_T *) %<pPayloadBuffer>);        
+            %endif
+        %else
+            /*  Copy packet buffer to payload  */
+            memcpy(%<pPayloadBuffer>, %<pPacketBuffer>, %<payloadSize>);
+        %endif
+
+        %%  Unpack payload buffer to output Data Ports
+        /*  Unpack payload buffer to output data ports  */
+        %assign showStatusPort = SFcnParamSettings.ShowStatusPort
+        %if showStatusPort
+            %assign numOutputDataPorts = LibBlockNumOutputPorts(block) - 1
+        %else
+            %assign numOutputDataPorts = LibBlockNumOutputPorts(block)
+        %endif
+        {
+            uint8_T *pAux = (uint8_T *)%<pPayloadBuffer>;
+            %foreach port = numOutputDataPorts
+
+                %assign outputWidth = SFcnParamSettings.OutputWidth[port]
+                %assign outputDTypeSize = SFcnParamSettings.OutputDTypeSize[port]
+                %assign blockSize = outputWidth*outputDTypeSize
+
+                %assign py = LibBlockOutputSignalAddr(port, "", "", 0)
+                memcpy(%<py>, pAux, %<blockSize>);
+
+                %if !ISEQUAL(port, numOutputDataPorts-1)
+                    pAux += %<blockSize>;
+                %endif
+
+            %endforeach
+        }
+
+        %%  Set Status port to 1 (packet received)
+        %assign showStatusPort = SFcnParamSettings.ShowStatusPort
+        %if showStatusPort
+            /*  Set Status port to 1 (packet received)  */
+            %<LibBlockAssignOutputSignal(numOutputDataPorts, "", "", 0,  1)>
+        %endif
+    }
+    else
+    {
+        %%  Set output Data Ports according to the selected output mode
+        %assign outputMode = SFcnParamSettings.OutputMode
+        %switch outputMode
+            %case 1
+                /*  Invalid packet: do nothing (hold previous output values)  */
+                %break
+
+            %case 2
+                /*  Invalid packet: reset outputs  */
+                %foreach port = numOutputDataPorts
+
+                    %assign outputWidth = SFcnParamSettings.OutputWidth[port]
+                    %assign outputDTypeSize = SFcnParamSettings.OutputDTypeSize[port]
+                    %assign blockSize = outputWidth*outputDTypeSize
+
+                    %assign py = LibBlockOutputSignalAddr(port, "", "", 0)
+                    memset(%<py>, 0x00, %<blockSize>);
+
+                %endforeach
+
+                %break
+
+        %endswitch
+
+        %%  Set Status port to 0 (packet not received)
+        %if showStatusPort
+            /*  Set Status port to 0 (packet not received)  */
+            %<LibBlockAssignOutputSignal(numOutputDataPorts, "", "", 0,  0)>
+        %endif
+    }    
+
+%endfunction %% Outputs
+
+
+%function Terminate(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    /*  Release heap space  */
+    %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1)
+    free(%<pPayloadBuffer>);
+    free(%<pPacketBuffer>);
+
+    %%  Create de-init code only for the last block instance in the model
+    %assign blockInstCnt = "usbSerialPacketReceive_blockInstCnt"
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = cnt - 1
+        %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+        %if cnt == 0
+            /* De-init USB Serial (last user) */
+            sfun_MagLevTbx_UsbSerialPacketReceive_WrappedTerminate();
+        %endif
+
+    %endif
+
+%endfunction %% Terminate

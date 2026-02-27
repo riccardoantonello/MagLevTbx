@@ -1,0 +1,21 @@
+# MATLAB / Simulink
+*.asv
+*.m~
+*.autosave
+slprj/
+codegen/
+*.slxc
+*.mdl.autosave
+*.slx.autosave
+
+# MEX binaries (platform-specific)
+*.mex*
+*.pdb
+*.obj
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Optional: App Designer autosave/backups (if any)
+*.mlapp.autosave

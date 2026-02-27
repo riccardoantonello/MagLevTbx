@@ -1,0 +1,139 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% February 17, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_UsbSerialPacketSend" "C"
+
+
+%function BlockTypeSetup(block, system) void
+
+    %%  declare external function prototypes
+    %openfile buffer
+    extern void sfun_MagLevTbx_UsbSerialPacketSend_WrappedStart();
+    extern void sfun_MagLevTbx_UsbSerialPacketSend_WrappedOutput(uint8_T *pPacketBuffer, \
+        uint32_T packetSize, boolean_T waitDTR);
+    extern void sfun_MagLevTbx_UsbSerialPacketSend_WrappedTerminate();
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %%  Allocate buffers
+    /*  Allocate payload buffer  */
+    %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+    %assign payloadSize = SFcnParamSettings.PayloadSize
+    %<pPayloadBuffer> = calloc(%<payloadSize>, sizeof(uint8_T));
+
+    /*  Allocate packet buffer  */
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1) 
+    %assign packetSize = SFcnParamSettings.PacketSize
+    %<pPacketBuffer> = calloc(%<packetSize>, sizeof(uint8_T));
+    
+    %%  Create init code only for the first block instance in the model
+    %assign blockInstCnt = "usbSerialPacketSend_blockInstCnt"
+
+    %assign cnt = 0
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+    %endif
+
+    %assign cnt = cnt + 1
+    %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+    %if cnt == 1
+        /*  Initialize USB Serial  */
+        sfun_MagLevTbx_UsbSerialPacketSend_WrappedStart();
+    %endif
+
+%endfunction %% Start
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %%  Pack input signals to payload buffer  
+    /*  Pack input signals to payload buffer  */
+    {
+        %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+        %assign numInputPorts = LibBlockNumInputPorts(block)
+        uint8_T *pAux = (uint8_T *)%<pPayloadBuffer>;
+        %foreach port = numInputPorts
+
+            %assign inputWidth = SFcnParamSettings.InputWidth[port]
+            %assign inputDTypeSize = SFcnParamSettings.InputDTypeSize[port]
+            %assign blockSize = inputWidth*inputDTypeSize
+            %assign pu = LibBlockInputSignalAddr(port, "", "", 0) 
+
+            /*  copy input signals to payload buffer  */
+            memcpy(pAux, %<pu>, %<blockSize>);
+
+            %if !ISEQUAL(port, numInputPorts-1)
+                pAux += %<blockSize>;
+            %endif
+
+        %endforeach
+    }
+
+    %%  Perform COBS encoding
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1) 
+    %assign cobsEncoded = SFcnParamSettings.CobsEncoded
+    %assign payloadSize = SFcnParamSettings.PayloadSize
+    %if cobsEncoded
+        /*  Perform COBS encoding  */
+        cobsEncode(%<pPayloadBuffer>, %<payloadSize>, %<pPacketBuffer>);
+    %else
+        /*  Copy payload to packet buffer  */
+        memcpy(%<pPacketBuffer>, %<pPayloadBuffer>, %<payloadSize>);
+    %endif
+    
+    %%  Add null terminator
+    %assign packetSize = SFcnParamSettings.PacketSize
+    %assign nullTerminated = SFcnParamSettings.NullTerminated
+    %if nullTerminated
+        /*  Add null terminator  */
+        ((uint8_T *)%<pPacketBuffer>)[%<packetSize-1>] = 0x00;
+    %endif
+
+    %%  Send packet
+    %assign waitDTR = SFcnParamSettings.WaitDTR
+
+    /*  Send packet  */
+    sfun_MagLevTbx_UsbSerialPacketSend_WrappedOutput( (uint8_T*) %<pPacketBuffer>, \
+            %<packetSize>, %<waitDTR>);
+    
+%endfunction %% Outputs
+
+
+%function Terminate(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    /*  Release heap space  */
+    %assign pPayloadBuffer = LibBlockDWork(DWork[0], "", "", 0) 
+    %assign pPacketBuffer = LibBlockDWork(DWork[0], "", "", 1)
+    free(%<pPayloadBuffer>);
+    free(%<pPacketBuffer>);
+
+    %%  Create de-init code only for the last block instance in the model
+    %assign blockInstCnt = "usbSerialPacketSend_blockInstCnt"
+    %if ISFIELD(::CompiledModel, blockInstCnt)
+
+        %assign cnt = GETFIELD(::CompiledModel, blockInstCnt)
+        %assign cnt = cnt - 1
+        %assign dummy = SETFIELD(::CompiledModel, blockInstCnt, cnt)
+
+        %if cnt == 0
+            /* De-init USB Serial (last user) */
+            sfun_MagLevTbx_UsbSerialPacketSend_WrappedTerminate();
+        %endif
+
+    %endif
+
+%endfunction %% Terminate
