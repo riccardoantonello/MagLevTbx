@@ -1,4 +1,4 @@
-# The "MagLev Toolbox" 🧲
+# 🧲 MagLev Toolbox 🧲
 
 ![MATLAB](https://img.shields.io/badge/MATLAB-R2025b-blue)
 ![Simulink](https://img.shields.io/badge/Simulink-Supported-orange)
@@ -54,9 +54,9 @@ platform for:
     | Host PC                 |                     |  Teensy 4.1 Target     |
     |                         |                     |                        |
     | - Control Design        |                     | - Magnetic Sensors     |
-    | - External Mode         |                     | - Current Sensors      |
-    | - Parameter Tuning      |                     | - Current Drivers      |
-    | - Data Logging App      |                     | - Real-Time Execution  |
+    | - Parameter Tuning      |                     | - Current Sensors      |
+    | - Data Logging          |                     | - Current Drivers      |
+    |                         |                     | - User LED             |
     +-------------------------+                     +------------------------+
 
 ## Key Features
@@ -65,13 +65,13 @@ platform for:
   - Magnetic sensors
   - Current sensors
   - Coil current drivers
-  - USB Serial binary packet communication
+  - USB Serial binary packet bi-directional communication
 
 - Support for:
   - Standalone deployment
   - External Mode (real-time tuning)
 
-- Binary serial communication with:
+- Bi-directional binary serial communication with:
   - Optional COBS encoding
   - Optional null termination
   - Optional DTR-based transmission gating
@@ -241,4 +241,4 @@ The MagLev Toolbox is available under the MIT license. See the LICENSE file for 
 
 If you use this toolbox in research or publications, please cite:
 
-R. Antonello,  D. Varagnolo, "The MagLev Toolbox: Rapid Control Prototyping Framework for the MagLev v4.0+ Platform", Dept. of Information Engineering, University of Padua, 2026.
+**R. Antonello,  D. Varagnolo, "The MagLev Toolbox: Rapid Control Prototyping Framework for the MagLev v4.0+ Platform", Dept. of Information Engineering, University of Padua, 2026.**
