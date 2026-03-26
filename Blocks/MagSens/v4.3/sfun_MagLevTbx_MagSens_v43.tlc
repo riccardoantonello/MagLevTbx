@@ -1,0 +1,67 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% March 25, 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_MagSens_v43" "C"
+
+%function BlockTypeSetup(block, system) void
+
+    %openfile buffer
+    extern void sfun_MagLevTbx_MagSens_WrappedStart(void);
+    extern void sfun_MagLevTbx_MagSens_WrappedOutput(double *y0);
+    extern void sfun_MagLevTbx_MagSens_WrappedTerminate(void);
+    %closefile buffer
+    %<LibCacheFunctionPrototype(buffer)>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+
+    %assign sensor_initFlag = "magSensor_initFlag"
+
+    %%  Check if the specified magnetic sensor has been initialized
+    %if !ISFIELD(::CompiledModel, sensor_initFlag)
+        %%  If not, set the flag and initialize the sensor
+        /* %<Type> Block: %<Name> */
+        %assign dummy = SETFIELD(::CompiledModel, sensor_initFlag, TLC_TRUE)
+        
+        /*  Initialize mag sensor  */
+        sfun_MagLevTbx_MagSens_WrappedStart();
+    %endif
+
+%endfunction %% Start
+
+
+%function Enable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Enable
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+    %assign py0 = LibBlockOutputSignalAddr(0, "", "", 0)
+
+    /*  Get measurement of mag sensor  */
+    sfun_MagLevTbx_MagSens_WrappedOutput(%<py0>);
+
+%endfunction %% Outputs
+
+
+%function Disable(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Disable
+
+
+%function Terminate(block, system) Output
+
+    /* %<Type> Block: %<Name> */
+    sfun_MagLevTbx_MagSens_WrappedTerminate();
+
+%endfunction %% Terminate

@@ -1,13 +1,13 @@
 /*
  * Riccardo Antonello (riccardo.antonello@unipd.it)
  * 
- * Februay 15, 2026
+ * March 25, 2026
  *
  * Dept. of Information Engineering, University of Padova 
  *
  */
 
-#define S_FUNCTION_NAME  sfun_MagLevTbx_MagSens
+#define S_FUNCTION_NAME  sfun_MagLevTbx_MagSens_v40
 #define S_FUNCTION_LEVEL 2
 
 #include "simstruc.h"

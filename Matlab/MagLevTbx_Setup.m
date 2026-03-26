@@ -3,7 +3,7 @@ function MagLevTbx_Setup()
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
 %
-% February 18, 2026
+% March 25, 2026
 %
 % Dept. of Information Engineering, University of Padova
 %
@@ -21,6 +21,13 @@ fprintf('---------------------------------\n');
 fprintf('%s\nVersion %s\nLast update: %s\n', ...
     info.name, info.ver, info.lastUpdate);
 fprintf('---------------------------------\n\n');
+
+%   set hardware version
+app = MagLevTbx_HwConfig();
+uiwait(app.MagLevTbxHwConfigUIFigure);
+
+ver = getpref('MagLevTbx', 'HwVersion');
+fprintf('Hardware version: %s\n\n', ver);
 
 %   create MEX files
 fprintf('Create MEX files: \n\n');

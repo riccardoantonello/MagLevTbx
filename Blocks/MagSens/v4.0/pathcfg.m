@@ -1,4 +1,4 @@
-function makemex(basedir)
+function pathcfg(basedir)
 
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
@@ -15,9 +15,9 @@ mfilepath = mfilename('fullpath');
 %   get relative path from toolbox base dir
 relpath = strrep(fullpath, strcat(basedir, filesep), '');
 
-%   Generate platform-specific mex files
-fprintf('- Compile file: %s\n', fullfile(relpath, 'sfun_MagLevTbx_MagSens.c'));
-mex -R2018a sfun_MagLevTbx_MagSens.c
+%   Add directories to search path
+fprintf('- Add directory: %s\n', relpath);
+addpath(fullpath);
 
 
-end  %  makemex
+end  %  pathcfg

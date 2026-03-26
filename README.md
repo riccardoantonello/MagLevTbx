@@ -90,6 +90,28 @@ platform for:
 - Embedded Coder®
 - Arduino Support Package for MATLAB/Simulink (configured for Teensy 4.1)
 
+
+### Supported PCB Versions
+
+The MagLev Toolbox currently supports the following hardware revisions:
+
+- **MagLev 4.0**
+  - Equipped with **8 magnetic sensors** (Infineon TLV493D)
+  - Full multi-sensor configuration for spatial magnetic field measurement
+
+- **MagLev 4.3**
+  - Equipped with **1 magnetic sensor** (Infineon TLV493D)
+  - PCB traces rerouted to improve **noise immunity**
+  - Simplified sensing architecture for improved signal quality
+
+The toolbox automatically adapts:
+- Available Simulink blocks
+- Mask parameters
+- Internal implementation
+
+based on the selected PCB version.
+
+
 ### Hardware
 
 - MagLev v4.0+ Magnetic Levitation System
@@ -111,6 +133,8 @@ cd('Your-MagLev-Toolbox-Root-Folder/Matlab')
 ```
 
 3. Run the setup script to:
+
+- Select the PCB version to use (see below) 
 - Compile all required C-MEX S-Functions
 - Add the toolbox folders to the MATLAB path
 - Save the updated path configuration
@@ -120,6 +144,49 @@ MagLevTbx_Setup
 ```
 
 4. Restart MATLAB.
+
+
+
+### Supported PCB Versions
+
+The MagLev Toolbox currently supports the following hardware revisions:
+
+- **MagLev 4.0**
+  - Equipped with **8 magnetic sensors** (Infineon TLV493D)
+  - Full multi-sensor configuration for spatial magnetic field measurement
+
+- **MagLev 4.3**
+  - Equipped with **1 magnetic sensor** (Infineon TLV493D)
+  - PCB traces rerouted to improve **noise immunity**
+  - Simplified sensing architecture for improved signal quality
+
+The toolbox automatically adapts:
+- Available Simulink blocks
+- Mask parameters
+- Internal implementation
+
+based on the selected PCB version.
+
+
+### Hardware Configuration (PCB Version)
+
+During the setup procedure, a dialog window will open to allow the user to select the hardware (PCB) version:
+
+- **MagLev 4.0**
+- **MagLev 4.3**
+
+This selection configures the toolbox behavior, enabling the appropriate Simulink blocks and hardware interfaces.
+
+#### Reconfiguring Hardware Version
+
+After installation, the hardware version can be changed at any time by running:
+
+```matlab
+MagLevTbx_HwConfig()
+```
+
+This will reopen the configuration dialog and update the toolbox settings accordingly.
+
 
 ## Quick Start
 
