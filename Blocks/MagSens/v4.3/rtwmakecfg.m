@@ -3,7 +3,7 @@ function makeInfo = rtwmakecfg()
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
 % 
-% March 25, 2026
+% April 02, 2026
 % 
 % Dept. of Information Engineering, University of Padova 
 
@@ -18,9 +18,15 @@ mfilepath = mfilename('fullpath');
 baseRoot = matlabshared.supportpkg.getSupportPackageRoot();
 
 %   get Teensyduino base dir
-teensyRoot = fullfile(baseRoot, ...
-    '3P.instrset', 'arduinoide.instrset', 'aCLI', 'data', ...
-    'packages', 'teensy', 'hardware', 'avr', '1.58.2');
+if ispc
+    teensyRoot = fullfile(baseRoot, ...
+        '3P.instrset', '..', 'aCLI', 'data', ...
+        'packages', 'teensy', 'hardware', 'avr', '1.58.2');
+else
+    teensyRoot = fullfile(baseRoot, ...
+        '3P.instrset', 'arduinoide.instrset', 'aCLI', 'data', ...
+        'packages', 'teensy', 'hardware', 'avr', '1.58.2');
+end
 
 %   get Teensy cores dir
 coreRoot = fullfile(teensyRoot, 'cores', 'teensy4');

@@ -15,7 +15,7 @@ info.rootDir = MagLevTbx_RootDir();
 info.author = 'Riccardo Antonello';
 info.email = 'riccardo.antonello@unipd.it';
 info.affiliation = 'Dept. of Infomration Engineering, University of Padova';
-info.lastUpdate = 'March 25, 2026';
+info.lastUpdate = 'April 02, 2026';
 
 
 end
