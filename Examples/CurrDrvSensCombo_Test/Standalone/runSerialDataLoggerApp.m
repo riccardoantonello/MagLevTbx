@@ -1,7 +1,7 @@
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
 %
-% February 26, 2026
+% April 07, 2026
 %
 % Dept. of Information Engineering, University of Padova
 %
@@ -11,7 +11,7 @@
 
 %   select serial port 
 %   Note: use serialportlist() to check for available serial ports
-serialPortName = "/dev/cu.usbmodem163368301"; 
+serialPortName = "/dev/cu.usbmodem163374901"; 
 
 %   define packet specifier
 packetSpec = {'single', 'single', 'single', 'single'};
@@ -25,9 +25,9 @@ baudRate = 115200;
 plotsGridSize = [4, 1];
 plotsContentList = [ ...
     1, 1, 1; ...    %   format: scope id, signal id, component id
-    2, 1, 1; ...    %
-    3, 1, 1; ...    %
-    4, 1, 1];       %
+    2, 2, 1; ...    %
+    3, 3, 1; ...    %
+    4, 4, 1];       %
 
 %   start serialDataLoggerApp with specified input arguments
 serialDataLoggerApp( ... 
