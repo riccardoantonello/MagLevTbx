@@ -3,13 +3,13 @@
 ![MATLAB](https://img.shields.io/badge/MATLAB-R2025b-blue)
 ![Simulink](https://img.shields.io/badge/Simulink-Supported-orange)
 ![Platform](https://img.shields.io/badge/Hardware-Teensy%204.1-green)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![License](https://img.shields.io/badge/License-BSD2-lightgrey)
 
 > Rapid Control Prototyping (RCP) Toolbox for the MagLev v4.0+ Magnetic Levitation System using MATLAB® and Simulink®.
 
 ## Overview
 
-The **MagLev Toolbox** MATLAB®/Simulink® toolbox has been developed to support
+The **MagLev Toolbox** MATLAB®/Simulink® toolbox developed to support
 **Rapid Control Prototyping (RCP)** for the [**MagLev v4.0+ Magnetic
 Levitation platform**](https://github.com/Hansolini/Take-home-Maglev-lab).
 
@@ -49,15 +49,17 @@ platform for:
 
 ## System Architecture
 
-    +-------------------------+      USB Serial     +------------------------+
-    | MATLAB / Simulink       | <-----------------> |  MagLev v4.0+ Hardware |
-    | Host PC                 |                     |  Teensy 4.1 Target     |
-    |                         |                     |                        |
-    | - Control Design        |                     | - Magnetic Sensors     |
-    | - Parameter Tuning      |                     | - Current Sensors      |
-    | - Data Logging          |                     | - Current Drivers      |
-    |                         |                     | - User LED             |
-    +-------------------------+                     +------------------------+
+```
+┌───────────────────────────┐                     ┌────────────────────────────┐
+│ MATLAB / Simulink         │                     │ MagLev v4.0+ Hardware      │
+│ Host PC                   │                     │ Teensy 4.1 Target          │
+│                           │                     │                            │
+│ • Control Design          │ ← USB Serial Link → │ • Magnetic Sensors         │
+│ • Parameter Tuning        │                     │ • Current Sensors          │
+│ • Data Logging            │                     │ • Current Drivers          │
+│                           │                     │ • User LED                 │
+└───────────────────────────┘                     └────────────────────────────┘
+```
 
 ## Key Features
 
@@ -270,8 +272,8 @@ This mode is ideal for controller tuning and experimental validation.
 ### How To Run
 
 1. Open the demo model.
-2. Open the **Hardware** tab
-3. Select **Run on Board ▸ Run on Board (External Mode)**
+2. Open the **Hardware** tab\
+3. Select **Run on Board ▸ Run on Board (External Mode)**\
 4. Click **Monitor & Tune**
 
 
@@ -302,7 +304,7 @@ It provides a structured environment for experimenting with:
 
 ## License
 
-The MagLev Toolbox is available under the BSD 2-Clause License. See the LICENSE file for more information.
+The MagLev Toolbox is available under the MIT license. See the LICENSE file for more information.
 
 ## Citation
 
