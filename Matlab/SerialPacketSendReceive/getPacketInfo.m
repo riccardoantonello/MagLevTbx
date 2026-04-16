@@ -3,7 +3,7 @@ function packetInfo = getPacketInfo(packetSpec)
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
 %
-% February 19, 2026
+% April 16, 2026
 %
 % Dept. of Information Engineering, University of Padova
 %
@@ -32,7 +32,7 @@ validDTypeSizes = [
 
 %   packetSpec must be a cell array of valid data type specifiers
 if ~iscell(packetSpec)
-    error("serialPacketReceive:invalidPacketSpec", ...
+    error("getPacketInfo:invalidPacketSpec", ...
         "packetSpec must be a cell array of data type specs like {'2*uint8','single'}.");
 end
 
@@ -53,31 +53,29 @@ for n = 1:cellsNum
     %   validate data type specifier
     spec = packetSpec{n};
     if ~(ischar(spec) || (isstring(spec) && isscalar(spec)))
-        error("serialPacketReceive:invalidPacketSpec", ...
+        error("getPacketInfo:invalidPacketSpec", ...
             "packetSpec{%d} must be a char vector or scalar string.", n);
     end
 
     %   match either "type" or "width*type" (allow spaces around *)
     spec = strtrim(string(spec));
-    tok = regexp(spec, "^(?:(\d+)\s*\*\s*)?([A-Za-z]\w*)$", "tokens", "once");
-    if isempty(tok)
-        error("serialPacketReceive:invalidPacketSpec", ...
-            "Invalid data type spec '%s'. Use 'type' or 'width*type' (e.g. '2*int16').", spec);
-    end
-
-    if isscalar(tok)
+    parts = split(spec, "*");
+    if isscalar(parts)
         % Only dtype matched, no width part
         cellWidth(n) = 1;
-        cellDType{n} = char(tok{1});
-    else
+        cellDType{n} = char(strtrim(parts));
+    elseif numel(parts) == 2
         % Width + dtype matched
-        cellWidth(n) = str2double(tok{1});
-        cellDType{n} = char(tok{2});
+        cellWidth(n) = str2double(strtrim(parts(1)));
+        cellDType{n} = strtrim(parts(2));
+    else
+        error("getPacketInfo:invalidPacketSpec", ...
+            "Invalid data type spec '%s'. Use 'type' or 'width*type' (e.g. '2*int16').", spec);
     end
 
     %   integer width check (now guaranteed digits, but still good)
     if cellWidth(n) < 1 || floor(cellWidth(n)) ~= cellWidth(n)
-        error("serialPacketReceive:invalidPacketSpec", ...
+        error("getPacketInfo:invalidPacketSpec", ...
             "Invalid data type spec '%s' - width must be a positive integer.", spec);
     end
     
@@ -85,7 +83,7 @@ for n = 1:cellsNum
     [isValidDTypeName, validDTypeIdx] = ismember(cellDType{n}, validDTypeNames);
     
     if ~isValidDTypeName
-        error("serialPacketReceive:invalidPacketSpec", ...
+        error("getPacketInfo:invalidPacketSpec", ...
             "Invalid data type spec '%s' - name must be of supported data types.", ...
             packetSpec{n});
     end
@@ -95,7 +93,7 @@ for n = 1:cellsNum
     
     %   check for valid data width
     if cellWidth(n) <= 0
-        error("serialPacketReceive:invalidPacketSpec", ...
+        error("getPacketInfo:invalidPacketSpec", ...
             "Invalid data type spec '%s' - width must be a positive number.", ...
             packetSpec{n});
     end
