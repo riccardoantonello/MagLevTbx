@@ -9,7 +9,7 @@
 
 ## Overview
 
-The **MagLev Toolbox** MATLAB®/Simulink® toolbox developed to support
+The **MagLev Toolbox** MATLAB®/Simulink® toolbox has been developed to support
 **Rapid Control Prototyping (RCP)** for the [**MagLev v4.0+ Magnetic
 Levitation platform**](https://github.com/Hansolini/Take-home-Maglev-lab).
 
@@ -31,7 +31,7 @@ workflow.
 
 The toolbox supports the complete RCP cycle:
 
-> **Model → Simulate → Deploy → Tune → Validate**
+**Model → Simulate → Deploy → Tune → Validate**
 
 1. Develop and test controllers in simulation
 2. Deploy to the target hardware
@@ -272,8 +272,8 @@ This mode is ideal for controller tuning and experimental validation.
 ### How To Run
 
 1. Open the demo model.
-2. Open the **Hardware** tab\
-3. Select **Run on Board ▸ Run on Board (External Mode)**\
+2. Open the **Hardware** tab
+3. Select **Run on Board ▸ Run on Board (External Mode)**
 4. Click **Monitor & Tune**
 
 
@@ -304,7 +304,7 @@ It provides a structured environment for experimenting with:
 
 ## License
 
-The MagLev Toolbox is available under the MIT license. See the LICENSE file for more information.
+The MagLev Toolbox is available under the BSD2 license. See the LICENSE file for more information.
 
 ## Citation
 
