@@ -164,7 +164,7 @@ for nFig = 1:3
         switch nFig
             case 1, ylim([-2, 2]);
             case 2, ylim([-2, 2]);
-            case 3, ylim([-25, -15]);
+            case 3, ylim([-25, -5]);
         end
 
     end
