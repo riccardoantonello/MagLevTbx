@@ -64,8 +64,8 @@ sens.hpf.den = denF;
 clear fc wc sysF numF denF;
 
 %   direct feedthrough matrix
-load(fullfile('data', sprintf('DirFeedthrough_MagLev%02d.mat', magLevId)));
-sens.Kft = directFeedthrough;
+load(fullfile('data', sprintf('DirFeedthroughMat_MagLev%02d.mat', magLevId)));
+sens.Kft = dirFeedthroughMat;
 
 
 %%  Enable logic params
