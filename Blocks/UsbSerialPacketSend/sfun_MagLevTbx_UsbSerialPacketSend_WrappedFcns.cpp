@@ -11,6 +11,7 @@
 
 #include <Arduino.h>
 #include <rtwtypes.h>
+#include <string.h>
 #include "cobs.h"
 
 #endif
@@ -28,6 +29,7 @@ void sfun_MagLevTbx_UsbSerialPacketSend_WrappedStart()
      *  Serial.begin() is optional on Teensy. 
      *  USB hardware initialization is performed before setup() runs.  
      */
+
 #endif
 }
 
@@ -39,12 +41,13 @@ void sfun_MagLevTbx_UsbSerialPacketSend_WrappedOutput(uint8_T *pPacketBuffer, \
     
     if (waitDTR == true)
     {
-        if (Serial.dtr())
-            Serial.write( (byte *)pPacketBuffer, packetSize );
+        if (Serial.dtr() && Serial.availableForWrite() >= packetSize)
+            Serial.write((byte *)pPacketBuffer, packetSize);
     }
     else
     {
-        Serial.write( (byte *)pPacketBuffer, packetSize );
+        if (Serial.availableForWrite() >= packetSize)
+            Serial.write((byte *)pPacketBuffer, packetSize);
     }
 
 #endif   

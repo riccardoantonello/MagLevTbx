@@ -1,7 +1,7 @@
 /*
  * Riccardo Antonello (riccardo.antonello@unipd.it)
  * 
- * February 16, 2026
+ * April 28, 2026
  *
  * Dept. of Information Engineering, University of Padova 
  *
@@ -18,7 +18,6 @@
 // HB_2A, HB_2B (+Y) - PIN 8, 9
 // HB_3A, HB_3B (-X) - PIN 6, 7
 
-// Motor driver pins
 #define HB_0A 4
 #define HB_0B 5
 #define HB_1A 2
@@ -40,6 +39,25 @@ const uint16_t driverPinB[NUM_DRIVERS] = {
     HB_2B,      //  (+Y)
     HB_0B };    //  (-Y)
 
+
+//  Aux functions
+static inline bool isValidDriverId(uint8_T driverId)
+{
+    return driverId < NUM_DRIVERS;
+}
+
+static inline void setDriverZeroCurrent(uint8_T driverId)
+{
+    analogWrite(driverPinA[driverId], 255);
+    analogWrite(driverPinB[driverId], 255);
+}
+
+static inline void setDriverOff(uint8_T driverId)
+{
+    analogWrite(driverPinA[driverId], 0);
+    analogWrite(driverPinB[driverId], 0);
+}
+
 # endif
 
 
@@ -52,6 +70,11 @@ void sfun_MagLevTbx_CurrDrv_WrappedStart(uint8_T driverId)
 {
 # ifndef MATLAB_MEX_FILE
     
+    //  Return if invalid driverId
+    if (!isValidDriverId(driverId)) {
+        return;
+    }
+
     //  Initialize current driver pins
     pinMode(driverPinA[driverId], OUTPUT);
     pinMode(driverPinB[driverId], OUTPUT);
@@ -63,11 +86,27 @@ void sfun_MagLevTbx_CurrDrv_WrappedStart(uint8_T driverId)
     analogWriteFrequency(driverPinA[driverId], 31250);
     analogWriteFrequency(driverPinB[driverId], 31250);
 
-    //  Set initial state to 0
-    analogWrite(driverPinA[driverId], 0);
-    analogWrite(driverPinB[driverId], 0);
+    //  Set initial state to zero current
+    setDriverZeroCurrent(driverId);
 
 # endif
+}
+
+
+void sfun_MagLevTbx_CurrDrv_WrappedEnable(uint8_T driverId)
+{
+    # ifndef MATLAB_MEX_FILE
+
+    //  Return if invalid driverId
+    if (!isValidDriverId(driverId)) {
+        return;
+    }
+
+    //  Re-enable current driver in a safe zero-current state.
+    //  The next Outputs() call will apply the requested PWM command.
+    setDriverZeroCurrent(driverId);
+
+    # endif
 }
 
 
@@ -75,29 +114,62 @@ void sfun_MagLevTbx_CurrDrv_WrappedOutput(uint8_T driverId, int16_T *u0)
 {
 # ifndef MATLAB_MEX_FILE
     
+    int16_T pwmCmd = *u0;
+
+    //  Return if invalid driverId
+    if (!isValidDriverId(driverId)) {
+        return;
+    }
+
+    //  Saturate command to the 8-bit PWM range expected by analogWriteResolution(8).
+    if (pwmCmd > 255) {
+        pwmCmd = 255;
+    } else if (pwmCmd < -255) {
+        pwmCmd = -255;
+    }
+
     //  Set current driver PWM
-    if (*u0 > 0) {
-        analogWrite(driverPinA[driverId], 255 - abs(*u0));
+    if (pwmCmd > 0) {
+        analogWrite(driverPinA[driverId], 255 - pwmCmd);
         analogWrite(driverPinB[driverId], 255);
-    } else if (*u0 < 0) {
+    } else if (pwmCmd < 0) {
         analogWrite(driverPinA[driverId], 255);
-        analogWrite(driverPinB[driverId], 255 - abs(*u0));
+        analogWrite(driverPinB[driverId], 255 + pwmCmd);
     } else {
-        analogWrite(driverPinA[driverId], 255);
-        analogWrite(driverPinB[driverId], 255);
+        setDriverZeroCurrent(driverId);
+        //setDriverOff(driverId);
     }
 
 # endif   
 }
 
 
+void sfun_MagLevTbx_CurrDrv_WrappedDisable(uint8_T driverId)
+{
+# ifndef MATLAB_MEX_FILE
+
+    if (!isValidDriverId(driverId)) {
+        return;
+    }
+
+    //  Disable current driver outputs
+    setDriverOff(driverId);
+
+# endif
+}
+
+
 void sfun_MagLevTbx_CurrDrv_WrappedTerminate(uint8_T driverId)
 {
 # ifndef MATLAB_MEX_FILE
+
+    //  Return if invalid driverId
+    if (!isValidDriverId(driverId)) {
+        return;
+    }
     
     //  Turn current driver off
-    analogWrite(driverPinA[driverId], 0);
-    analogWrite(driverPinB[driverId], 0);
+    setDriverOff(driverId);
     
 # endif      
 }

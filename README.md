@@ -220,6 +220,9 @@ Demonstrates how to stream binary packet data via USB serial connection and log 
 **🔹 USB Serial Loopback Test** (_Standalone Mode_):
 Demonstrates bidirectional USB serial communication between the host PC and the embedded target.
 
+**🔹 Magnetic Levitation PD-based Control Test** (_Standalone Mode_):
+Demonstrates how to achieve magnetic levitation with a closed-loop PD-based control system.
+
 ---
 
 ### 2-A. Running an Example Model in Standalone Mode (Autonomous Execution)

@@ -1,7 +1,7 @@
 %%
 %% Riccardo Antonello (riccardo.antonello@unipd.it)
 %% 
-%% February 16, 2026
+%% April 28, 2026
 %%
 %% Dept. of Information Engineering, University of Padova 
 %%
@@ -12,7 +12,9 @@
 
     %openfile buffer
     extern void sfun_MagLevTbx_CurrDrv_WrappedStart(uint8_T driverId);
+    extern void sfun_MagLevTbx_CurrDrv_WrappedEnable(uint8_T driverId);
     extern void sfun_MagLevTbx_CurrDrv_WrappedOutput(uint8_T driverId, int16_T *u0);
+    extern void sfun_MagLevTbx_CurrDrv_WrappedDisable(uint8_T driverId);
     extern void sfun_MagLevTbx_CurrDrv_WrappedTerminate(uint8_T driverId);
     %closefile buffer
     %<LibCacheFunctionPrototype(buffer)>
@@ -48,6 +50,12 @@
 %function Enable(block, system) Output
     /* %<Type> Block: %<Name> */
 
+    /* %<Type> Block: %<Name> */
+    %assign driverId = SFcnParamSettings.driverId
+
+    /*  Re-enable current driver %<driverId> in a safe zero-current state  */
+    sfun_MagLevTbx_CurrDrv_WrappedEnable(%<driverId>);
+
 %endfunction %% Enable
 
 
@@ -65,6 +73,12 @@
 
 %function Disable(block, system) Output
     /* %<Type> Block: %<Name> */
+
+    /* %<Type> Block: %<Name> */
+    %assign driverId = SFcnParamSettings.driverId
+
+    /*  Disable current driver %<driverId> outputs  */
+    sfun_MagLevTbx_CurrDrv_WrappedDisable(%<driverId>);
 
 %endfunction %% Disable
 
