@@ -1,0 +1,93 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% June 05 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_ExecTime" "C"
+
+%function BlockTypeSetup(block, system) void
+
+   %<LibAddToCommonIncludes("Arduino.h")>
+
+%endfunction %% BlockTypeSetup
+
+
+%function BlockInstanceSetup(block, system) void
+
+    %assign startTime = LibBlockDWork(DWork[0], "", "", 0)
+    %assign execTime = LibBlockDWork(DWork[0], "", "", 1)
+    %assign digitalPinEnable = SFcnParamSettings.digitalPinEnable
+
+    %%  LibSystemOutputCustomCode section
+    %openfile buffer
+        /* %<Type> Block: %<Name> */
+        
+        %if digitalPinEnable == TLC_TRUE
+            %assign digitalPin = SFcnParamSettings.digitalPin
+            /* begin of step routine - set digital pin */
+            digitalWrite(%<digitalPin>, HIGH);
+        %endif
+        
+        /* begin of step routine - save current time */
+        %<startTime> = ARM_DWT_CYCCNT;
+
+    %closefile buffer
+    %<LibSystemOutputCustomCode(system, buffer, "header")>
+
+
+    %%  LibSystemUpdateCustomCode section
+    %openfile buffer
+        /* %<Type> Block: %<Name> */
+
+        /* end of step routine - evaluate elapsed time */
+        %<execTime> = ARM_DWT_CYCCNT - %<startTime>;
+        %<execTime> = %<execTime> / (F_CPU_ACTUAL / 1000000U);
+
+        %if digitalPinEnable == TLC_TRUE
+            /* end of step routine - reset digital pin */
+            digitalWrite(%<digitalPin>, LOW);
+        %endif
+
+    %closefile buffer
+    %<LibSystemUpdateCustomCode(system, buffer, "trailer")>
+
+%endfunction %% BlockInstanceSetup
+
+
+%function Start(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %assign execTime = LibBlockDWork(DWork[0], "", "", 1)
+    %assign digitalPinEnable = SFcnParamSettings.digitalPinEnable
+
+    /* init exec time variable */
+    %<execTime> = 0; 
+
+    %if digitalPinEnable == TLC_TRUE
+        %assign digitalPin = SFcnParamSettings.digitalPin
+        /* execution time measurement - configure digital pin */
+        pinMode(%<digitalPin>, OUTPUT);
+    %endif
+
+%endfunction %% Start
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %assign y = LibBlockOutputSignal(0, "", "", 0)
+    %assign execTime = LibBlockDWork(DWork[0], "", "", 1)
+
+    /* output exec time evaluated at previous step */
+    %<y> = %<execTime>;
+
+%endfunction %% Outputs
+
+
+%function Terminate(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Terminate

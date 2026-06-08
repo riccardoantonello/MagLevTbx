@@ -1,0 +1,45 @@
+%%
+%% Riccardo Antonello (riccardo.antonello@unipd.it)
+%% 
+%% June 05 2026
+%%
+%% Dept. of Information Engineering, University of Padova 
+%%
+
+%implements "sfun_MagLevTbx_ExecPause" "C"
+
+%function BlockTypeSetup(block, system) void
+
+   %<LibAddToCommonIncludes("Arduino.h")>
+
+%endfunction %% BlockTypeSetup
+
+
+%function Start(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Start
+
+
+%function Outputs(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+    %assign pauseTime = SFcnParamSettings.pauseTime
+
+    %% The max delay for delayMicroseconds() is 16383 us. 
+    %% For longer delays use delay() instead (up to 429497295 ms).
+
+    /* exec pause */
+    %if pauseTime < 16384
+        delayMicroseconds(%<pauseTime>);
+    %else
+        delay( (uint32_T)(%<pauseTime>/1000.0) );
+    %endif
+
+%endfunction %% Outputs
+
+
+%function Terminate(block, system) Output
+    /* %<Type> Block: %<Name> */
+
+%endfunction %% Terminate

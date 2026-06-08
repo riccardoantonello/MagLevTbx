@@ -17,7 +17,7 @@ magLevId = 19;
 
 %   create serialport object
 fprintf("Connecting ... ");
-sp = serialport("/dev/cu.usbmodem163410501", 115200);
+sp = serialport("/dev/cu.usbmodem163412001", 115200);
 fprintf("Done.\n");
 
 %   reset DTR

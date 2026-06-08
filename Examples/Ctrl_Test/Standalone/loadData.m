@@ -1,7 +1,7 @@
 %%
 % Riccardo Antonello (riccardo.antonello@unipd.it)
 %
-% May 02, 2026
+% June 07, 2026
 %
 % Dept. of Information Engineering, University of Padova
 %
@@ -10,7 +10,7 @@
 %%  Main params
 
 %   MagLev id number (selects the feedthrough matrix file to load)
-magLevId = 19;
+magLevId = 02;
 
 %   main (smallest) sampling time
 Ts = 1/2500;
@@ -94,6 +94,11 @@ enable.heartBeat_Ts = 0.5;
 %   add dummy variable to support Inf values in struct fiels
 enable.dummy = {'ForceInline'};
 
+
+%%  Datalogging params
+
+%   data logging sampling time
+datalog.Ts = 1/100;
 
 
 

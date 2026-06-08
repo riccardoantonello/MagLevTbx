@@ -1,7 +1,7 @@
 /*
  * Riccardo Antonello (riccardo.antonello@unipd.it)
  * 
- * May 02, 2026
+ * June 07, 2026
  *
  * Dept. of Information Engineering, University of Padova 
  *
@@ -69,7 +69,10 @@ bool TLV493D_ResetSensor(void)
 
 bool TLV493D_GetMagField_mT(double *bx, double *by, double *bz)
 {
+    static uint8_t lastFrm = 0xFF;
+    static uint16_t stuckCnt = 0;
     uint8_t b[7];
+    uint8_t frm;
 
     //  Read registers 0x00..0x06. The measurement frame starts at 0x00
     uint8_t n = Wire.requestFrom((uint8_t)TLV493D_A1B6_ADDR, (uint8_t)7, (uint8_t)true);
@@ -83,6 +86,29 @@ bool TLV493D_GetMagField_mT(double *bx, double *by, double *bz)
             return false;
         }
         b[i] = Wire.read();
+    }
+
+    //  ADC hang-up detection
+    //
+    //  IMPORTANT NOTE: This hang-up detection mechanism uses static variables
+    //  to track missing frames. Consequently, it is not suitable for
+    //  multi-sensor configurations, as the state is shared across all sensors.
+    //
+    //  For multi-sensor operation, the routine must be rewritten to maintain
+    //  separate state information for each sensor instance.
+    //
+    frm = (b[3] >> 2) & 0x03;
+    if (frm == lastFrm) {
+        if (++stuckCnt > 5) {           // reset after 5 missed frames
+            TLV493D_ResetSensor();      // general call 0x00
+            TLV493D_ConfigSensor();     // re-write MOD1/MOD2
+            stuckCnt = 0;
+            lastFrm = 0xFF;
+            return false;
+        }
+    } else {
+        stuckCnt = 0;
+        lastFrm = frm;
     }
 
     //  Get raw mag field measurements
@@ -123,7 +149,7 @@ static bool TLV493D_WriteRegisters(uint8_t reg0, uint8_t reg1_woParityBit, uint8
     reg1 = reg1_woParityBit & 0x7F;
     
     //  Add odd parity bit (bit 7)
-    if( ~TLV493D_OddParity(reg0, reg1_woParityBit, reg2, reg3) )
+    if( !TLV493D_OddParity(reg0, reg1_woParityBit, reg2, reg3) )
         reg1 |= 0x80;
 
     //  Write registers 

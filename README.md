@@ -223,6 +223,9 @@ Demonstrates bidirectional USB serial communication between the host PC and the 
 **🔹 Magnetic Levitation PD-based Control Test** (_Standalone Mode_):
 Demonstrates how to achieve magnetic levitation with a closed-loop PD-based control system.
 
+**🔹 Exec Time Test** (_Standalone Mode_):
+Demonstrates how to use the `Execution Pause` and `Execution Time` blocks to insert an execution delay in the model step routine, and to measure the corresponding execution time. 
+
 ---
 
 ### 2-A. Running an Example Model in Standalone Mode (Autonomous Execution)
