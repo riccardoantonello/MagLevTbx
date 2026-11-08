@@ -7,7 +7,7 @@
  *
  */
 
-#define S_FUNCTION_NAME  sfun_MagLevTbx_MagSens_v40
+#define S_FUNCTION_NAME  sfun_MagLevTbx_MagSens_v44
 #define S_FUNCTION_LEVEL 2
 
 #include "simstruc.h"
@@ -43,13 +43,13 @@ static void mdlCheckParameters(SimStruct *S) {
       !mxIsScalar(pa0) ||
       !mxIsNumeric(pa0) ||
       mxIsComplex(pa0)) {
-    ssSetErrorStatus(S, "1st parameter must be a valid sensor number (0..7).");
+    ssSetErrorStatus(S, "1st parameter must be a valid sensor number (0..4).");
     return;
   }
 
   mxDouble *dt0 = mxGetDoubles(pa0);
-  if (*dt0 < 0 || *dt0 > 7 || *dt0 != (int)(*dt0)) {
-    ssSetErrorStatus(S, "1st parameter must be a valid sensor number (0..7).");
+  if (*dt0 < 0 || *dt0 > 4 || *dt0 != (int)(*dt0)) {
+    ssSetErrorStatus(S, "1st parameter must be a valid sensor number (0..4).");
     return;
   }
 

@@ -1,9 +1,9 @@
 /*
  * Riccardo Antonello (riccardo.antonello@unipd.it)
- * 
+ *
  * May 02, 2026
  *
- * Dept. of Information Engineering, University of Padova 
+ * Dept. of Information Engineering, University of Padova
  *
  */
 
@@ -11,52 +11,49 @@
 
 /*  Includes ------------------------------------------------------------*/
 #include <Arduino.h>
-#include "Wire.h"
 #include <math.h>
 
-#include <TCA9548.h>
-#include <TLV493D.h>
+#include "TMAG5170.h"
+#include "board_v4_4_0_rc_1.h"
 
 #include <rtwtypes.h>
 
 /*  Defines -------------------------------------------------------------*/
 
-/*  I2C clock frequency [Hz]    */
-const uint32_t I2C_CLOCK_HZ = 400000; 
+namespace BOARD = BOARD_V4_4_0_RC_1;
 
-/*  Number of sensors   */
-const uint8_t  NUM_SENSORS = 8;
+using Revision = BOARD::Sensor_Revision;
+using Range    = Revision::Range;
 
-/*  TCA9548 default 7-bit I2C address  */
-const uint8_t TCA9548_ADDR = 0x70;
+constexpr Range                         RANGE     = Range::PM_300mT;
+constexpr TMAG5170::ConversionAveraging AVERAGING = TMAG5170::ConversionAveraging::X1;
 
-/*  MCU reset pin for TCA9548 I2C mux   */
-const uint8_t TCA9548_RESET_PIN = 26;
-
-
-/*  Variables -----------------------------------------------------------*/
-TCA9548 i2cMux(TCA9548_ADDR);
+/*  Output frame: true for the silkscreen frame (axis markings on the PCB),
+ *  false for the sensor frame (TMAG5170 axes as mounted). See board_v4_4_0_rc_1.h.
+ */
+constexpr bool OUTPUT_SILKSCREEN_FRAME = true;
 
 
 /*  Private variables ---------------------------------------------------*/
-static int8_t activeChannel = -1;
-static bool magInitialized[NUM_SENSORS] = {false};
-static double lastGood[NUM_SENSORS][3] = {{0.0}};
+static TMAG5170::Sensor<Revision> magSensor[BOARD::NUM_SENSORS];
+static bool                       magInitialized[BOARD::NUM_SENSORS] = {false};
+static double                     lastGood[BOARD::NUM_SENSORS][3]    = {{0.0}};
 
 
 /*  Private functions ---------------------------------------------------*/
 
-/*  Non-fatal recovery used only after a failed transaction */
-void i2cRecover(void)
-{
-    Wire.end();
-    delayMicroseconds(200);
-    Wire.begin();
-    Wire.setClock(I2C_CLOCK_HZ);
-#ifdef WIRE_HAS_TIMEOUT
-    Wire.setWireTimeout(3000, true);
-#endif
-    activeChannel = -1;
+static TMAG5170::Sensor<Revision> magSensorConfig(void) {
+  TMAG5170::Sensor<Revision> config = {};
+
+  config.magnetic_channels    = TMAG5170::MagneticChannels::XYZ;
+  config.x_range              = RANGE;
+  config.y_range              = RANGE;
+  config.z_range              = RANGE;
+  config.trigger_mode         = TMAG5170::TriggerMode::SPI;
+  config.conversion_averaging = AVERAGING;
+  config.operating_mode       = TMAG5170::OperatingMode::ACTIVE_TRIGGER;
+
+  return config;
 }
 
 
@@ -68,140 +65,78 @@ extern "C" {
 #endif
 
 
-void sfun_MagLevTbx_i2cMux_WrappedStart(void)
-{
+void sfun_MagLevTbx_MagSens_v44_WrappedBusStart(void) {
 #ifndef MATLAB_MEX_FILE
 
-    //  Initialize I2C communication
-    Wire.begin();
-    Wire.setClock(I2C_CLOCK_HZ);
-
-    //  Set timeout to prevent permanent lock
-#ifdef WIRE_HAS_TIMEOUT
-    Wire.setWireTimeout(3000, true);
-#endif
-    delay(50);
-
-    //  Initialize the I2C multiplexer
-    if (!i2cMux.begin()) {
-        return;
-    }
-
-    //  Set reset pin
-    i2cMux.setResetPin(TCA9548_RESET_PIN);
-
-    //  Reset mux and wait briefly
-    i2cMux.reset();
-    delay(10);
-
-    // Do not call i2cMux.reset() unless a real reset pin was configured.
-    if (!i2cMux.isConnected()) {
-        return;
-    }
-
-    //  Init state variables
-    activeChannel = -1;
-    for (uint8_t i = 0; i < NUM_SENSORS; ++i) {
-        magInitialized[i] = false;
-        lastGood[i][0] = 0.0;
-        lastGood[i][1] = 0.0;
-        lastGood[i][2] = 0.0;
-    }
+  for (uint8_t i = 0; i < BOARD::NUM_SENSORS; ++i) {
+    pinMode(BOARD::SENSORS[i].cs_pin, OUTPUT);
+    digitalWrite(BOARD::SENSORS[i].cs_pin, HIGH);
+  }
 
 #endif
 }
 
 
-void sfun_MagLevTbx_MagSens_WrappedStart(uint8_T sensorId)
-{
+void sfun_MagLevTbx_MagSens_v44_WrappedStart(uint8_T sensorId) {
 #ifndef MATLAB_MEX_FILE
 
-    //  Return in case of invalid sensor
-    if (sensorId >= NUM_SENSORS) {
-        return;
-    }
-        
-    //  Select mux channel
-    if (!i2cMux.selectChannel(sensorId)) {
-        activeChannel = -1;
-        return false;
-    }
-    activeChannel = (int8_t)sensorId;
-    delayMicroseconds(200);
+  //  Return in case of invalid sensor
+  if (sensorId >= BOARD::NUM_SENSORS) {
+    return;
+  }
 
-    //  Init the sensor connected to the currently selected mux channel
-    magInitialized[sensorId] = TLV493D_InitSensor();
+  //  Configure the sensor
+  magSensor[sensorId] = magSensorConfig();
+
+  const TMAG5170::Status status = TMAG5170::init_sensor(&magSensor[sensorId], BOARD::SENSORS[sensorId].cs_pin);
+  magInitialized[sensorId]      = (status == TMAG5170::Status::OK);
 
 #endif
 }
 
 
-void sfun_MagLevTbx_MagSens_WrappedOutput(uint8_T sensorId, double *y0)
-{
+void sfun_MagLevTbx_MagSens_v44_WrappedOutput(uint8_T sensorId, double *y0) {
 #ifndef MATLAB_MEX_FILE
 
-    //  Return in case of invalid sensor
-    if (sensorId >= NUM_SENSORS) {
-        y0[0] = y0[1] = y0[2] = NAN;
-        return;
-    }
+  //  Return in case of invalid sensor
+  if (sensorId >= BOARD::NUM_SENSORS) {
+    y0[0] = y0[1] = y0[2] = NAN;
+    return;
+  }
 
-    //  Select mux channel for this sensor only when needed
-    if (activeChannel != sensorId) {
-        if (!i2cMux.selectChannel(sensorId)) {
-            y0[0] = lastGood[sensorId][0];
-            y0[1] = lastGood[sensorId][1];
-            y0[2] = lastGood[sensorId][2];
-            activeChannel = -1;
-            return;
+  if (magInitialized[sensorId]) {
+    TMAG5170::Reading      reading;
+    const TMAG5170::Status status = TMAG5170::get_magfield_mT(&magSensor[sensorId], &reading);
+
+    // Update the reading when the status is OK.
+    // Note that this means the last reading will be kept on errors
+    if (status == TMAG5170::Status::OK) {
+      const double sensorFrame[3] = {reading.x_mT, reading.y_mT, reading.z_mT};
+
+      if (OUTPUT_SILKSCREEN_FRAME) {
+        BOARD::SensorToSilkscreen(sensorFrame, lastGood[sensorId]);
+      } else {
+        for (uint8_t axis = 0; axis < 3; ++axis) {
+          lastGood[sensorId][axis] = sensorFrame[axis];
         }
-        activeChannel = sensorId;
-        delayMicroseconds(50);
+      }
     }
+  }
 
-    //  If initialization failed or the sensor was reset, try to configure it again
-    if (!magInitialized[sensorId]) {
-        magInitialized[sensorId] = TLV493D_InitSensor();
-        if (!magInitialized[sensorId]) {
-            y0[0] = lastGood[sensorId][0];
-            y0[1] = lastGood[sensorId][1];
-            y0[2] = lastGood[sensorId][2];
-            return;
-        }
-    }
+  y0[0] = lastGood[sensorId][0];
+  y0[1] = lastGood[sensorId][1];
+  y0[2] = lastGood[sensorId][2];
 
-    //  Read data
-    double bx, by, bz;
-    if (!TLV493D_GetMagField_mT(&bx, &by, &bz)) {
-        magInitialized[sensorId] = false;
-        y0[0] = lastGood[sensorId][0];
-        y0[1] = lastGood[sensorId][1];
-        y0[2] = lastGood[sensorId][2];
-        i2cRecover();
-        return;
-    }
-
-    lastGood[sensorId][0] = bx;
-    lastGood[sensorId][1] = by;
-    lastGood[sensorId][2] = bz;
-
-    y0[0] = bx;
-    y0[1] = by;
-    y0[2] = bz;
-
-#endif   
+#endif
 }
 
 
-void sfun_MagLevTbx_MagSens_WrappedTerminate(void)
-{
+void sfun_MagLevTbx_MagSens_v44_WrappedTerminate(void) {
 #ifndef MATLAB_MEX_FILE
 
-    // Leave the I2C bus in a safe state: deselect all TCA9548 channels
-    i2cMux.disableAllChannels();
-    activeChannel = -1;
+  //  Nothing to release: every chip-select is deasserted after each transfer
 
-#endif      
+#endif
 }
 
 #ifdef __cplusplus

@@ -16,8 +16,8 @@ mfilepath = mfilename('fullpath');
 relpath = strrep(fullpath, strcat(basedir, filesep), '');
 
 %   Generate platform-specific mex files
-fprintf('- Compile file: %s\n', fullfile(relpath, 'sfun_MagLevTbx_MagSens_v40.c'));
-mex -R2018a sfun_MagLevTbx_MagSens_v40.c
+fprintf('- Compile file: %s\n', fullfile(relpath, 'sfun_MagLevTbx_MagSens_v44.c'));
+mex -R2018a sfun_MagLevTbx_MagSens_v44.c
 
 
 end  %  makemex
