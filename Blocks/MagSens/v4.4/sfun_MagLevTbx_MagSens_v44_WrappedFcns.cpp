@@ -25,13 +25,8 @@ namespace BOARD = BOARD_V4_4_0_RC_1;
 using Revision = BOARD::Sensor_Revision;
 using Range    = Revision::Range;
 
-constexpr Range                         RANGE     = Range::PM_300mT;
-constexpr TMAG5170::ConversionAveraging AVERAGING = TMAG5170::ConversionAveraging::X1;
-
-/*  Output frame: true for the silkscreen frame (axis markings on the PCB),
- *  false for the sensor frame (TMAG5170 axes as mounted). See board_v4_4_0_rc_1.h.
- */
-constexpr bool OUTPUT_SILKSCREEN_FRAME = true;
+constexpr Range                         RANGE     = Range::PM_75mT;
+constexpr TMAG5170::ConversionAveraging AVERAGING = TMAG5170::ConversionAveraging::X4;
 
 
 /*  Private variables ---------------------------------------------------*/
@@ -54,6 +49,11 @@ static TMAG5170::Sensor<Revision> magSensorConfig(void) {
   config.operating_mode       = TMAG5170::OperatingMode::ACTIVE_TRIGGER;
 
   return config;
+}
+
+
+static void sensorToOutputFrame(const double sensorFrame[3], double outputFrame[3]) {
+  BOARD::SensorToSilkscreen(sensorFrame, outputFrame);
 }
 
 
@@ -112,14 +112,7 @@ void sfun_MagLevTbx_MagSens_v44_WrappedOutput(uint8_T sensorId, double *y0) {
     // Note that this means the last reading will be kept on errors
     if (status == TMAG5170::Status::OK) {
       const double sensorFrame[3] = {reading.x_mT, reading.y_mT, reading.z_mT};
-
-      if (OUTPUT_SILKSCREEN_FRAME) {
-        BOARD::SensorToSilkscreen(sensorFrame, lastGood[sensorId]);
-      } else {
-        for (uint8_t axis = 0; axis < 3; ++axis) {
-          lastGood[sensorId][axis] = sensorFrame[axis];
-        }
-      }
+      sensorToOutputFrame(sensorFrame, lastGood[sensorId]);
     }
   }
 

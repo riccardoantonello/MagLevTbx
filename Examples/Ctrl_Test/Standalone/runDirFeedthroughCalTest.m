@@ -10,14 +10,14 @@
 %%  Define MagLev id number
 
 %   MagLev id number (used in filenames)
-magLevId = 19;
+magLevId = 1001;
 
 
 %%  Create serial object
 
 %   create serialport object
 fprintf("Connecting ... ");
-sp = serialport("/dev/cu.usbmodem163412001", 115200);
+sp = serialport("/dev/cu.usbmodem154428201", 115200);
 fprintf("Done.\n");
 
 %   reset DTR
