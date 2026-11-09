@@ -21,11 +21,8 @@ Ts = 1/2500;
 %   control sampling time
 ctrl.Ts = Ts;
 
-%   PD gains
-ctrl.Kp = 80;
-ctrl.Kd = 0.05;
-% ctrl.Kp = 80;
-% ctrl.Kd = 0.1;
+%   output polarity (+1 or -1), depends on how the solenoids are mounted
+ctrl.polarity = 1;
 
 %   position references [mT]
 ctrl.refX = -0.1;
