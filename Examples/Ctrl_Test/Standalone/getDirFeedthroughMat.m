@@ -10,7 +10,8 @@
 %%  Load calibration test data
 
 %   MagLev id number
-magLevId = 1001;
+%   Note: set magLevId in Examples/board_selection.m
+board_selection;
 
 %   load data
 load(fullfile('data', sprintf('CalTestData_MagLev%02d.mat', magLevId)));

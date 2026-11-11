@@ -7,17 +7,18 @@
 %
 
 
-%%  Define MagLev id number
+%%  Select MagLev unit
 
-%   MagLev id number (used in filenames)
-magLevId = 1001;
+%   MagLev id number (used in filenames) and serial port
+%   Note: set both in Examples/board_selection.m
+board_selection;
 
 
 %%  Create serial object
 
 %   create serialport object
 fprintf("Connecting ... ");
-sp = serialport("/dev/cu.usbmodem154428201", 115200);
+sp = serialport(serialPortName, 115200);
 fprintf("Done.\n");
 
 %   reset DTR

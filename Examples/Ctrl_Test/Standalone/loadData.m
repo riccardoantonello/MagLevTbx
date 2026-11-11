@@ -10,7 +10,8 @@
 %%  Main params
 
 %   MagLev id number (selects the feedthrough matrix file to load)
-magLevId = 1001;
+%   Note: set magLevId in Examples/board_selection.m
+board_selection;
 
 %   main (smallest) sampling time
 Ts = 1/2500;

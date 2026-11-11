@@ -9,9 +9,8 @@
 %   Either run serialDataLoggerApp() and configure the parameters from GUI,
 %   or pass the desired settings from command line as specified below.
 
-%   select serial port 
-%   Note: use serialportlist() to check for available serial ports
-serialPortName = "/dev/cu.usbmodem163368301"; 
+%   select serial port (set in Examples/board_selection.m)
+board_selection;
 
 %   define packet specifier
 packetSpec = {'3*single'};
