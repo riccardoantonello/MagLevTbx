@@ -10,7 +10,7 @@
 %%  Load calibration test data
 
 %   MagLev id number
-magLevId = 19;
+magLevId = 1001;
 
 %   load data
 load(fullfile('data', sprintf('CalTestData_MagLev%02d.mat', magLevId)));

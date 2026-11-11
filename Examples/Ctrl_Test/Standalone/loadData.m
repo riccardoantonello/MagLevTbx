@@ -10,7 +10,7 @@
 %%  Main params
 
 %   MagLev id number (selects the feedthrough matrix file to load)
-magLevId = 02;
+magLevId = 1001;
 
 %   main (smallest) sampling time
 Ts = 1/2500;
@@ -21,9 +21,12 @@ Ts = 1/2500;
 %   control sampling time
 ctrl.Ts = Ts;
 
-%   PD gains
-ctrl.Kp = 90;
-ctrl.Kd = 0.35;
+%   output polarity (+1 or -1), depends on how the solenoids are mounted
+ctrl.polarity = 1;
+
+%   position references [mT]
+ctrl.refX = -0.1;
+ctrl.refY = 0.2;
 
 %   output saturation
 ctrl.outMax = 150;
@@ -98,7 +101,7 @@ enable.dummy = {'ForceInline'};
 %%  Datalogging params
 
 %   data logging sampling time
-datalog.Ts = 1/100;
+datalog.Ts = 1/500;
 
 
 

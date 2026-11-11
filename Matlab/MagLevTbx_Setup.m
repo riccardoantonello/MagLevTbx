@@ -29,6 +29,11 @@ uiwait(app.MagLevTbxHwConfigUIFigure);
 ver = getpref('MagLevTbx', 'HwVersion');
 fprintf('Hardware version: %s\n\n', ver);
 
+%   set magnetometer variant (TLV493D-based boards only; v4.4 uses the TMAG5170)
+if ismember(ver, {'4.0', '4.3'})
+    selectTLV493DVariant(rootDir);
+end
+
 %   create MEX files
 fprintf('Create MEX files: \n\n');
 cd( fullfile(rootDir, 'Matlab') );
@@ -46,5 +51,49 @@ savepath;
 cd(origdir);
 
 fprintf('Setup completed. \n\n');
+
+end
+
+
+function selectTLV493DVariant(rootDir)
+%   Ask which TLV493D variant is fitted and enable the matching
+%   TLV493D_VARIANT_* define in TLV493D.h (the other one is commented out).
+
+hFile = fullfile(rootDir, 'Blocks', 'MagSens', 'Lib', 'TLV493D', 'TLV493D.h');
+variants = {'A1B6', 'A2B6'};
+txt = fileread(hFile);
+
+%   variant currently enabled in the header (uncommented #define)
+cur = regexp(txt, '^[ \t]*#define[ \t]+TLV493D_VARIANT_(\w+)', ...
+    'tokens', 'once', 'lineanchors');
+if isempty(cur) || ~ismember(cur{1}, variants)
+    cur = variants(1);
+end
+
+sel = questdlg('Select the magnetometer variant:', ...
+    'MagLevTbx magnetometer', variants{:}, cur{1});
+if isempty(sel)
+    sel = cur{1};   % dialog closed: keep current setting
+end
+
+for i = 1:numel(variants)
+    if strcmp(variants{i}, sel)
+        prefix = '';
+    else
+        prefix = '// ';
+    end
+    txt = regexprep(txt, ...
+        ['^[ \t]*(//[ \t]*)?(#define[ \t]+TLV493D_VARIANT_' variants{i} ')\>'], ...
+        [prefix '$2'], 'lineanchors');
+end
+
+fid = fopen(hFile, 'w');
+if fid < 0
+    error('MagLevTbx:setup', 'Cannot write to %s', hFile);
+end
+fwrite(fid, txt);
+fclose(fid);
+
+fprintf('Magnetometer variant: TLV493D-%s\n\n', sel);
 
 end
