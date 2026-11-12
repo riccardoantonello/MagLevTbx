@@ -6,7 +6,7 @@
 
 
 %   MagLev id number (used in calibration data filenames)
-magLevId = 12;
+magLevId = 1001;
 
 %   serial port of the Teensy
 %   Leave it as "" to auto-detect the port

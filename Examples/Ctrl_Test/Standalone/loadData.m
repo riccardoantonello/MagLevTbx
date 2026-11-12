@@ -26,8 +26,8 @@ ctrl.Ts = Ts;
 ctrl.polarity = 1;
 
 %   position references [mT]
-ctrl.refX = -0.1;
-ctrl.refY = 0.2;
+ctrl.refX = 0;
+ctrl.refY = 0;
 
 %   output saturation
 ctrl.outMax = 150;
