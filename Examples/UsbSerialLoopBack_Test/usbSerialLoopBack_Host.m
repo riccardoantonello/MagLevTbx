@@ -8,9 +8,12 @@
 
 %%  Create serial object
 
+%   select serial port (set in Examples/board_selection.m)
+board_selection;
+
 %   create serialport object
 fprintf("Connecting ... ");
-sp = serialport("/dev/cu.usbmodem163412001", 115200);
+sp = serialport(serialPortName, 115200);
 fprintf("Done.\n");
 
 %   pause before continuing (wait serial port to set)

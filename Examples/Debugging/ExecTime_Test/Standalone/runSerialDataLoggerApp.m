@@ -6,9 +6,8 @@
 % Dept. of Information Engineering, University of Padova
 %
 
-%   select serial port 
-%   Note: use serialportlist() to check for available serial ports
-serialPortName = "/dev/cu.usbmodem154438801"; 
+%   select serial port (set in Examples/board_selection.m)
+board_selection;
 
 %   define packet specifier
 packetSpec = {'uint32'};

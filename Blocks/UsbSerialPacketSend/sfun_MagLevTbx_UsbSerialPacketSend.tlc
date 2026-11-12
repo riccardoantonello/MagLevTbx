@@ -103,12 +103,19 @@
     %endif
 
     %%  Send packet
+    %%  Note: in External Mode builds (Monitor & Tune) the USB serial port carries
+    %%  the External Mode (XCP) traffic. Writing packets to it would corrupt the
+    %%  XCP frames, so no packets are sent.
     %assign waitDTR = SFcnParamSettings.WaitDTR
 
+    %if EXISTS(::ExtMode) && ::ExtMode == 1
+    /*  Packet not sent: USB serial is used by External Mode  */
+    %else
     /*  Send packet  */
     sfun_MagLevTbx_UsbSerialPacketSend_WrappedOutput( (uint8_T*) %<pPacketBuffer>, \
             %<packetSize>, %<waitDTR>);
-    
+    %endif
+
 %endfunction %% Outputs
 
 

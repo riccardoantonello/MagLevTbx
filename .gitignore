@@ -19,3 +19,10 @@ Thumbs.db
 
 # Optional: App Designer autosave/backups (if any)
 *.mlapp.autosave
+
+# Simulink Coder build output
+*_ert_rtw/
+*_grt_rtw/
+*.elf
+*.hex
+*.bin
